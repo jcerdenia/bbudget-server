@@ -1,37 +1,42 @@
 const mongoose = require('mongoose');
 
-function requireObject(name, type = String) {
-	return {
-		type: String,
-		required: [true, `${name} is required.`]
-	}
-}
-
-function setDefault(type, defaultValue = null) {
-	return {
-		type: type,
-		default: defaultValue
+function createObject(
+	type = String, 
+	isRequired = true, 
+	name = null, 
+	defaultValue = null
+) {
+	if (isRequired) {
+		return {
+			type: type,
+			required: [true, `${name} is required.`]
+		}
+	} else {
+		return {
+			type: type,
+			default: defaultValue
+		}
 	}
 }
 
 const userSchema = new mongoose.Schema({
-	firstName: requireObject('First name'),
-	lastName: requireObject('Last name'),
-	name: requireObject('Name'),
-	email: requireObject('Email address'),
-	password: requireObject('Password'),
-	mobileNo: requireObject('Mobile no.'),
+	firstName: createObject(name = 'First name'),
+	lastName: createObject(name = 'Last name'),
+	name: createObject(name = 'Name'),
+	email: createObject(name = 'Email address'),
+	password: createObject(name = 'Password'),
+	mobileNo: createObject(name = 'Mobile no.'),
 	categories: [{
-		name: requireObject('Category name'),
-		type: requireObject('Category type')
+		name: createObject(name = 'Category name'),
+		type: createObject(name = 'Category type')
 	}],
 	transactions: [{
-		categoryName: requireObject('Category name'), 
-		type: requireObject('Category type'),
-		amount: requireObject('Amount', Number),
-		description: setDefault(String),
-		balanceAfterTranscation: requireObject('Balance', Number),
-		date: setDefault(Date, new Date())
+		categoryName: createObject(name = 'Category name'), 
+		categoryType: createObject(name = 'Category type'),
+		amount: createObject(Number, name = 'Amount'),
+		description: createObject(isRequired = false),
+		balanceAfterTranscation: createObject(Number, name = 'Balance'),
+		date: createObject(Date, false, defaultValue = newDate())
 	}]
 });
 
