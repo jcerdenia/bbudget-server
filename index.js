@@ -15,4 +15,4 @@ app.use(express.urlencoded({ extended: true }));
 
 app.listen(process.env.PORT, () => {
 	console.log('API is up and running.')
-})
+});
