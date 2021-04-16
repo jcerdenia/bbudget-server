@@ -1,7 +1,8 @@
 const User = require('../models/user');
 const bcrypt = require('bcrypt');
 
-// Primary Sections
+// Primary Section
+
 module.exports.register = (params) => {
 	let newUser = new User({
 		firstName: params.firstName,
@@ -11,7 +12,13 @@ module.exports.register = (params) => {
 		password: bcrypt.hashSync(params.password, 10)
 	});
 
-	return newUser.save().then((user, error) => {
-		return (error) ? false : true
-	});
+	return newUser
+	.save()
+	.then((user, error) => (error) ? false : true);
+}
+
+module.exports.emailExists = (params) => {
+	return User
+	.find({ email: params.email })
+	.then((result) => result.length > 0 ? true : false);
 }
