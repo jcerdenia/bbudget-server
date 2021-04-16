@@ -6,23 +6,20 @@ function createObject(
 	name = null, 
 	defaultValue = null
 ) {
+	const obj = { type: type }
+	
 	if (isRequired) {
-		return {
-			type: type,
-			required: [true, `${name} is required.`]
-		}
+		obj['required'] = [true, `${name} is required.`];
 	} else {
-		return {
-			type: type,
-			default: defaultValue
-		}
+		obj['default'] = defaultValue;
 	}
+
+	return obj;
 }
 
 const userSchema = new mongoose.Schema({
 	firstName: createObject(name = 'First name'),
 	lastName: createObject(name = 'Last name'),
-	name: createObject(name = 'Name'),
 	email: createObject(name = 'Email address'),
 	password: createObject(name = 'Password'),
 	mobileNo: createObject(name = 'Mobile no.'),
