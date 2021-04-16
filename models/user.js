@@ -21,17 +21,17 @@ const userSchema = new mongoose.Schema({
 	password: setRequired(String, 'Password'),
 	mobileNo: setRequired(String, 'Mobile no.'),
 	categories: [{
- 	   	 name: setRequired(String, 'Category name'),
- 	   	 type: setRequired(String, 'Category type') 	   
+		name: setRequired(String, 'Category name'),
+		type: setRequired(String, 'Category type') 	   
 	}],
 	transactions: [{
-    	categoryName: setRequired(String, 'Category name'),
-     	categoryType: setRequired(String, 'Category type'),
-     	amount: setRequired(Number, 'Amount'),
-     	description: setDefault(String, null),
-     	balanceAfterTransaction: setRequired(Number, 'Balance'),
-     	dateAdded: setDefault(Date, new Date())
-   	}]
+		categoryName: setRequired(String, 'Category name'),
+		categoryType: setRequired(String, 'Category type'),
+		amount: setRequired(Number, 'Amount'),
+		description: setDefault(String, null),
+		balanceAfterTransaction: setRequired(Number, 'Balance'),
+		dateAdded: setDefault(Date, new Date())
+	}]
 });
 
 module.exports = mongoose.model('user', userSchema);
