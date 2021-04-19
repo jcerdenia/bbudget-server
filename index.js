@@ -6,7 +6,10 @@ const cors = require('cors');
 
 require('dotenv').config();
 
-mongoose.connection.once('open', () => console.log('Connected to MongoDB Atlas.'));
+mongoose.connection.once('open', () => {
+	console.log('Connected to MongoDB Atlas.')
+});
+
 mongoose.connect(process.env.DB_CONNECTION_STRING, { 
 	useNewUrlParser: true, 
 	useUnifiedTopology: true 
@@ -15,6 +18,10 @@ mongoose.connect(process.env.DB_CONNECTION_STRING, {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/api/users', userRoutes);
+
+app.get('/', () => {
+	console.log("Successfully hosted online.")
+});
 
 app.listen(process.env.PORT, () => {
 	console.log('API is up and running.')

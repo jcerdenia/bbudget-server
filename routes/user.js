@@ -1,14 +1,12 @@
-const express = require('express');
+const express = require('express')
 const router = express.Router();
 const UserController = require('../controllers/user');
-const auth = require('../auth')
-
-/*	Primary Routes */
+const auth = require('../auth');
 
 router.post('/register', (req, res) => {
 	UserController
 	.register(req.body)
-	.then((result) => res.send(result));
+	.then((result) => res.send(result))
 });
 
 router.post('/email-exists', (req, res) => {
@@ -30,7 +28,5 @@ router.post('/add-category', auth.verify, (req, res) => {
 	.addCategory(req.body)
 	.then((result) => res.send(result));
 });
-
-/*	Secondary Routes */
 
 module.exports = router;
