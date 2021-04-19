@@ -19,8 +19,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/api/users', userRoutes);
 
-app.get('./', () => {
-	console.log("Successfully hosted online.")
+app.get('/', (req, res) => {
+	const message = "Successfully hosted.";
+	console.log(message);
+	res.send(message);
 });
 
 app.listen(process.env.PORT, () => {
