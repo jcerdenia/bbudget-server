@@ -36,4 +36,11 @@ router.post('/get-categories', auth.verify, (req, res) => {
 	.then((result) => res.send(result));
 });
 
+router.get('/details', auth.verify, (req, res) => {
+	req.body.userId = auth.decode(req.headers.authorization).id;
+	UserController
+	.get({ userId: user.id })
+	.then((user) => res.send(result));
+});
+
 module.exports = router;

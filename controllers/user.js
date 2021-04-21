@@ -68,3 +68,9 @@ module.exports.getCategories = (params) => {
 		}
 	});
 }
+
+module.exports.get = (params) => {
+	return User
+	.findById(params.userId)
+	.then((user) => user)
+}
