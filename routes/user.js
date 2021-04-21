@@ -29,4 +29,11 @@ router.post('/add-category', auth.verify, (req, res) => {
 	.then((result) => res.send(result));
 });
 
+router.post('/get-categories', auth.verify, (req, res) => {
+	req.body.userId = auth.decode(req.headers.authorization).id;
+	UserController
+	.getCategories(req.body)
+	.then((result) => res.send(result));
+});
+
 module.exports = router;

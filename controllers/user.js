@@ -52,3 +52,19 @@ module.exports.addCategory = (params) => {
 		.then((user, error) => (error) ? false : true);
 	});
 }
+
+module.exports.getCategories = (params) => {
+	return User
+	.findById(params.userId)
+	.then((user) => {
+		if (typeof params.name === 'undefined') {
+			return user.categories;
+		} else {
+			return user.categories.filter((category) => {
+				if (category.type === params.type) {
+					return category;
+				}
+			});
+		}
+	});
+}
