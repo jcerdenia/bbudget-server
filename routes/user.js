@@ -37,10 +37,17 @@ router.post('/get-categories', auth.verify, (req, res) => {
 });
 
 router.get('/details', auth.verify, (req, res) => {
-	req.body.userId = auth.decode(req.headers.authorization).id;
+	const user = auth.decode(req.headers.authorization);
 	UserController
 	.get({ userId: user.id })
-	.then((user) => res.send(result));
+	.then((result) => res.send(result));
 });
+
+router.post('/add-record', auth.verify, (req, res) => {
+	req.body.userId = auth.decode(req.headers.authorization).id;
+	UserController
+	.addRecord(req.body)
+	.then((result) => res.send(result));
+})
 
 module.exports = router;

@@ -25,12 +25,13 @@ module.exports.emailExists = (params) => {
 }
 
 module.exports.login = (params) => {
-	console.log(params.email);
+	console.log(`Attempting to log in ${params.email}...`);
 	const { email, password } = params;
 	
 	return User
-	.findOne({ email })
+	.findOne({ email: email })
 	.then((user) => {
+		console.log(`Got user ${user.firstName} ${user.lastName}.`)
 		if (!user) return false;
 		let passwordsMatch = bcrypt.compareSync(password, user.password);
 		if (!passwordsMatch) return false;
@@ -44,7 +45,7 @@ module.exports.addCategory = (params) => {
 	.then((user) => {
 		user.categories.push({
 			name: params.name,
-			type: params.typeName
+			type: params.type
 		});
 
 		return user
@@ -57,7 +58,7 @@ module.exports.getCategories = (params) => {
 	return User
 	.findById(params.userId)
 	.then((user) => {
-		if (typeof params.name === 'undefined') {
+		if (typeof params.type === 'undefined') {
 			return user.categories;
 		} else {
 			return user.categories.filter((category) => {
@@ -73,4 +74,35 @@ module.exports.get = (params) => {
 	return User
 	.findById(params.userId)
 	.then((user) => { email: user.email })
+}
+
+module.exports.addRecord = (params) => {
+	return User.findById(params.userId)
+	.then((user) => {
+		let balanceAfterTransaction = 0
+		if (user.transactions.length !== 0) {
+			const balanceBeforeTranasction = user.transactions[user.transactions.length - 1].balanceAfterTransaction
+			if (params.type === 'Income') {
+				balanceAfterTransaction = balanceBeforeTranasction + params.amount
+			} else {
+				balanceAfterTransaction = balanceBeforeTranasction - params.amount
+			}
+		} else {
+			balanceAfterTransaction = params.amount
+		}
+
+		user.transactions.push({
+			categoryName: params.categoryName,
+			type: params.type,
+			amount: params.amount,
+			description: params.description,
+			balanceAfterTransaction: params.balanceAfterTransaction
+		})
+
+		return user
+		.save()
+		.then((user, err) => {
+			return (err) ? false : true;
+		})
+	})
 }

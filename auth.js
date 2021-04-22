@@ -7,7 +7,7 @@ module.exports.createAccessToken = (user) => {
 }
 
 module.exports.verify = (req, res, next) => {
-	const token = req.headers.authorization;
+	let token = req.headers.authorization;
 	if (typeof token !== "undefined") {
 		token = token.slice(7, token.length);
 		return jwt.verify(token, secret, (error, data) => {
