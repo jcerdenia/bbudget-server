@@ -44,9 +44,9 @@ router.get('/get-categories', auth.verify, (req, res) => {
 });
 
 router.get('/details', auth.verify, (req, res) => {
-	const user = auth.decode(req.headers.authorization);
+	req.body.userId = auth.decode(req.headers.authorization).id;
 	UserController
-	.getDetails({ userId: user.id })
+	.getDetails(req.body)
 	.then((result) => res.send(result));
 });
 
@@ -54,6 +54,13 @@ router.post('/add-record', auth.verify, (req, res) => {
 	req.body.userId = auth.decode(req.headers.authorization).id;
 	UserController
 	.addRecord(req.body)
+	.then((result) => res.send(result));
+})
+
+router.get('/get-records', auth.verify, (req, res) => {
+	req.body.userId = auth.decode(req.headers.authorization).id;
+	UserController
+	.getRecords(req.body)
 	.then((result) => res.send(result));
 })
 

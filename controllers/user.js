@@ -3,8 +3,6 @@ const bcrypt = require('bcrypt');
 const auth = require('../auth');
 const moment = require('moment');
 
-/*	Primary Section */
-
 module.exports.register = (params) => {
 	let newUser = new User({
 		firstName: params.firstName,
@@ -83,7 +81,13 @@ module.exports.getDetails = (params) => {
 	return User
 	.findById(params.userId)
 	.then((user) => {
-		return (user) ? { email: user.email } : false;
+		if (user) {
+			return {
+				email: user.email
+			}
+		} else {
+			return false;
+		}
 	});
 }
 
@@ -110,12 +114,20 @@ module.exports.addRecord = (params) => {
 			categoryType: params.categoryType,
 			amount: params.amount,
 			description: params.description,
-			balanceAfterTransaction: params.balanceAfterTransaction
+			balanceAfterTransaction: balanceAfterTransaction
 		});
 
 		return user
 		.save()
 		.then((user, error) => (error) ? false : true)
+	})
+}
+
+module.exports.getRecords = (params) => {
+	return User
+	.findById(params.userId)
+	.then((user) => {
+		return (user) ? user.transactions : false;
 	})
 }
 
