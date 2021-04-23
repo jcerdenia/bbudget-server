@@ -1,6 +1,7 @@
 const User = require('../models/user');
 const bcrypt = require('bcrypt');
 const auth = require('../auth');
+const moment = require('moment');
 
 /*	Primary Section */
 
@@ -24,6 +25,11 @@ module.exports.emailExists = (params) => {
 	.then((result) => result.length > 0 ? true : false);
 }
 
+module.exports.registerNew = (params) => {
+	return this.emailExists(params)
+	.then((emailExists) => (!emailExists) ? this.register(params) : false );
+}
+
 module.exports.login = (params) => {
 	console.log(`Attempting to log in ${params.email}...`);
 	const { email, password } = params;
@@ -31,8 +37,12 @@ module.exports.login = (params) => {
 	return User
 	.findOne({ email: email })
 	.then((user) => {
+		if (!user) {
+			console.log("No such user.")
+			return false;
+		}
+
 		console.log(`Got user ${user.firstName} ${user.lastName}.`)
-		if (!user) return false;
 		let passwordsMatch = bcrypt.compareSync(password, user.password);
 		if (!passwordsMatch) return false;
 		return { accessToken: auth.createAccessToken(user) }
@@ -62,47 +72,77 @@ module.exports.getCategories = (params) => {
 			return user.categories;
 		} else {
 			return user.categories.filter((category) => {
-				if (category.type === params.type) {
-					return category;
-				}
-			});
+				return category.type.toLowerCase() === params.type.toLowerCase();
+			})
 		}
 	});
 }
 
-module.exports.get = (params) => {
+module.exports.getDetails = (params) => {
+	console.log("Attempting to retrieve " + params.userId)
 	return User
 	.findById(params.userId)
-	.then((user) => { email: user.email })
+	.then((user) => {
+		return (user) ? { email: user.email } : false;
+	});
 }
 
 module.exports.addRecord = (params) => {
 	return User.findById(params.userId)
 	.then((user) => {
-		let balanceAfterTransaction = 0
-		if (user.transactions.length !== 0) {
-			const balanceBeforeTranasction = user.transactions[user.transactions.length - 1].balanceAfterTransaction
-			if (params.type === 'Income') {
-				balanceAfterTransaction = balanceBeforeTranasction + params.amount
+		let balanceAfterTransaction = 0;
+		const transactions = user.transactions;
+		
+		if (transactions.length !== 0) {
+			const balanceBeforeTransaction = transactions[transactions.length - 1].balanceAfterTransaction;
+			
+			if (params.type.toLowerCase() === 'income') {
+				balanceAfterTransaction = balanceBeforeTransaction + params.amount;
 			} else {
-				balanceAfterTransaction = balanceBeforeTranasction - params.amount
+				balanceAfterTransaction = balanceBeforeTransaction - params.amount;
 			}
 		} else {
-			balanceAfterTransaction = params.amount
+			balanceAfterTransaction = params.amount;
 		}
 
 		user.transactions.push({
 			categoryName: params.categoryName,
-			type: params.type,
+			categoryType: params.categoryType,
 			amount: params.amount,
 			description: params.description,
 			balanceAfterTransaction: params.balanceAfterTransaction
-		})
+		});
 
 		return user
 		.save()
-		.then((user, err) => {
-			return (err) ? false : true;
-		})
+		.then((user, error) => (error) ? false : true)
 	})
+}
+
+module.exports.getRecordsBreakdownByRange = (params) => {
+	return User
+	.findById(params.userId)
+	.then((user) => {
+		const summary = user.categories.map((category) => {
+			return {
+				categoryName: category.name,
+				totalAmount: 0
+			}
+		});
+
+		user.transactions.filter((transaction) => {
+			const isSameOrAfter = moment(transaction.dateAdded).isSameOrAfter(params.fromDate, 'day');
+			const isSameOrBefore = moment(transaction.dateAdded).isSameOrBefore(params.toDate, 'day');
+
+			if (isSameOrAfter && isSameOrBefore) {
+				for (let i = 0; i < summary.length; i++) {
+					if (summary[i].categoryName === transaction.categoryName) {
+						summary[i].totalAmount += transaction.amount
+					}
+				}
+			}
+		})
+
+		return summary
+	});
 }

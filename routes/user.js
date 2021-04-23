@@ -6,7 +6,7 @@ const auth = require('../auth');
 router.post('/register', (req, res) => {
 	UserController
 	.register(req.body)
-	.then((result) => res.send(result))
+	.then((result) => res.send(result));
 });
 
 router.post('/email-exists', (req, res) => {
@@ -14,6 +14,13 @@ router.post('/email-exists', (req, res) => {
 	.emailExists(req.body)
 	.then((result) => res.send(result));
 });
+
+// emailExists and register in one method
+router.post('/register-new', (req, res) => {
+	UserController
+	.registerNew(req.body)
+	.then((result) => res.send(result));
+})
 
 router.post('/login', (req, res) => {
 	UserController
@@ -29,7 +36,7 @@ router.post('/add-category', auth.verify, (req, res) => {
 	.then((result) => res.send(result));
 });
 
-router.post('/get-categories', auth.verify, (req, res) => {
+router.get('/get-categories', auth.verify, (req, res) => {
 	req.body.userId = auth.decode(req.headers.authorization).id;
 	UserController
 	.getCategories(req.body)
@@ -39,7 +46,7 @@ router.post('/get-categories', auth.verify, (req, res) => {
 router.get('/details', auth.verify, (req, res) => {
 	const user = auth.decode(req.headers.authorization);
 	UserController
-	.get({ userId: user.id })
+	.getDetails({ userId: user.id })
 	.then((result) => res.send(result));
 });
 
