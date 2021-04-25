@@ -29,18 +29,12 @@ module.exports.registerNew = (params) => {
 }
 
 module.exports.login = (params) => {
-	console.log(`Attempting to log in ${params.email}...`);
 	const { email, password } = params;
 	
 	return User
 	.findOne({ email: email })
 	.then((user) => {
-		if (!user) {
-			console.log("No such user.")
-			return false;
-		}
-
-		console.log(`Got user ${user.firstName} ${user.lastName}.`)
+		if (!user) return false;
 		let passwordsMatch = bcrypt.compareSync(password, user.password);
 		if (!passwordsMatch) return false;
 		return { accessToken: auth.createAccessToken(user) }
@@ -62,6 +56,18 @@ module.exports.addCategory = (params) => {
 	});
 }
 
+module.exports.deleteCategory = (params) => {
+	return User
+	.findById(params.userId)
+	.then((user) => {
+		user.categories.pull({ _id: params.categoryId })
+
+		return user
+		.save()
+		.then((user, error) => (error) ? false : true);
+	})
+}
+
 module.exports.getCategories = (params) => {
 	return User
 	.findById(params.userId)
@@ -77,17 +83,10 @@ module.exports.getCategories = (params) => {
 }
 
 module.exports.getDetails = (params) => {
-	console.log("Attempting to retrieve " + params.userId)
 	return User
 	.findById(params.userId)
 	.then((user) => {
-		if (user) {
-			return {
-				email: user.email
-			}
-		} else {
-			return false;
-		}
+		(user) ? { email: user.email } : false;
 	});
 }
 
@@ -99,8 +98,7 @@ module.exports.addRecord = (params) => {
 		
 		if (transactions.length !== 0) {
 			const balanceBeforeTransaction = transactions[transactions.length - 1].balanceAfterTransaction;
-			
-			if (params.type.toLowerCase() === 'income') {
+			if (params.categoryType.toLowerCase() === 'income') {
 				balanceAfterTransaction = balanceBeforeTransaction + params.amount;
 			} else {
 				balanceAfterTransaction = balanceBeforeTransaction - params.amount;
@@ -123,6 +121,13 @@ module.exports.addRecord = (params) => {
 	})
 }
 
+module.exports.deleteRecord = (params) => {
+	return User.findById(params.userId)
+	.then((user) => {
+		user.transactions.pull({ _id: recordId })
+	})
+}
+
 module.exports.getRecords = (params) => {
 	return User
 	.findById(params.userId)
@@ -136,10 +141,7 @@ module.exports.getRecordsBreakdownByRange = (params) => {
 	.findById(params.userId)
 	.then((user) => {
 		const summary = user.categories.map((category) => {
-			return {
-				categoryName: category.name,
-				totalAmount: 0
-			}
+			return { categoryName: category.name, totalAmount: 0 }
 		});
 
 		user.transactions.filter((transaction) => {
@@ -155,6 +157,6 @@ module.exports.getRecordsBreakdownByRange = (params) => {
 			}
 		})
 
-		return summary
+		return summary;
 	});
 }
