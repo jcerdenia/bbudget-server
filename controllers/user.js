@@ -86,7 +86,7 @@ module.exports.getDetails = (params) => {
 	return User
 	.findById(params.userId)
 	.then((user) => {
-		(user) ? { email: user.email } : false;
+		return (user) ? { email: user.email } : false;
 	});
 }
 
@@ -117,15 +117,45 @@ module.exports.addRecord = (params) => {
 
 		return user
 		.save()
-		.then((user, error) => (error) ? false : true)
-	})
+		.then((user, error) => (error) ? false : true);
+	});
 }
 
 module.exports.deleteRecord = (params) => {
 	return User.findById(params.userId)
 	.then((user) => {
-		user.transactions.pull({ _id: recordId })
-	})
+		// Save references to record and index matching user Id.
+		let recordToDelete = null;
+		let indexToDelete = null;
+		for (i in user.transactions) {
+			if (user.transactions[i]._id == params.recordId) {
+				indexToDelete = i;
+				recordToDelete = user.transactions[i];
+				break;
+			}
+		}
+
+		if (recordToDelete !== null) {
+			// If type is income, subtract amount from each remaining record. Otherwise, add.
+			if (recordToDelete.categoryType.toLowerCase() === 'income') {
+				for (let i = indexToDelete + 1; i < user.transactions.length; i++) {
+					user.transactions[i].balanceAfterTransaction -= recordToDelete.amount;
+				}
+			} else {
+				for (let i = indexToDelete + 1; i < user.transactions.length; i++) {
+					user.transactions[i].balanceAfterTransaction += recordToDelete.amount;
+				}
+			}
+
+			user.transactions.pull({ _id: params.recordId }) // Delete record from user.
+			// Save changes.
+			return user
+			.save()
+			.then((user, error) => (error) ? false : true);
+		} else {
+			return false;
+		}
+	});
 }
 
 module.exports.getRecords = (params) => {
@@ -144,6 +174,14 @@ module.exports.getRecordsBreakdownByRange = (params) => {
 			return { categoryName: category.name, totalAmount: 0 }
 		});
 
+		if (params.fromDate == '') {
+			params.fromDate = user.transactions[0].dateAdded;
+		}
+
+		if (params.toDate == '') {
+			params.toDate = user.transactions[user.transactions.length - 1].dateAdded;
+		}
+
 		user.transactions.filter((transaction) => {
 			const isSameOrAfter = moment(transaction.dateAdded).isSameOrAfter(params.fromDate, 'day');
 			const isSameOrBefore = moment(transaction.dateAdded).isSameOrBefore(params.toDate, 'day');
@@ -159,4 +197,55 @@ module.exports.getRecordsBreakdownByRange = (params) => {
 
 		return summary;
 	});
+}
+
+module.exports.getIncomeByMonth = (params) => {
+	return getBreakdownByType('income', params);
+}
+
+module.exports.getExpensesByMonth = (params) => {
+	return getBreakdownByType('expense', params);
+}
+
+function getBreakdownByType(type, params) {
+	return User
+	.findById(params.userId)
+	.then((user) => {
+		const months = [];
+		for (transaction of user.transactions) {
+			const month = moment(transaction.dateAdded).format('MMMM YYYY');
+			if (!months.includes(month)) months.push(month);
+		}
+		
+		const monthlyBreakdown = [];
+		for (month of months) {
+			let monthlyTotal = 0;
+			for (transaction of user.transactions) {
+				if (moment(transaction.dateAdded).format('MMMM YYYY') == month 
+					&& transaction.categoryType.toLowerCase() == type.toLowerCase()) {
+					monthlyTotal += transaction.amount; 
+				}
+			}
+
+			monthlyBreakdown.push({
+				month: month,
+				total: monthlyTotal 
+			})
+		}
+
+		return monthlyBreakdown;
+	});
+}
+
+module.exports.getBalanceTrend = (params) => {
+	return User
+	.findById(params.userId)
+	.then((user) => {
+		return user.transactions.map((transaction) => {
+			return {
+				balance: transaction.balanceAfterTransaction,
+				date: moment(transaction.dateAdded).format('l')
+			}
+		});
+	})
 }

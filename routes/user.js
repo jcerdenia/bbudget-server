@@ -43,7 +43,7 @@ router.post('/delete-category', auth.verify, (req, res) => {
 	.then((result) => res.send(result));
 })
 
-router.get('/get-categories', auth.verify, (req, res) => {
+router.post('/get-categories', auth.verify, (req, res) => {
 	req.body.userId = getUser(req).id;
 	UserController
 	.getCategories(req.body)
@@ -75,6 +75,34 @@ router.get('/get-records', auth.verify, (req, res) => {
 	req.body.userId = getUser(req).id;
 	UserController
 	.getRecords(req.body)
+	.then((result) => res.send(result));
+})
+
+router.post('/get-records-breakdown-by-range', auth.verify, (req, res) => {
+	req.body.userId = getUser(req).id;
+	UserController
+	.getRecordsBreakdownByRange(req.body)
+	.then((result) => res.send(result));
+})
+
+router.get('/get-income-by-month', auth.verify, (req, res) => {
+	req.body.userId = getUser(req).id;
+	UserController
+	.getIncomeByMonth(req.body)
+	.then((result) => res.send(result));
+})
+
+router.get('/get-expenses-by-month', auth.verify, (req, res) => {
+	req.body.userId = getUser(req).id;
+	UserController
+	.getExpensesByMonth(req.body)
+	.then((result) => res.send(result));
+})
+
+router.get('/get-balance-trend', auth.verify, (req, res) => {
+	req.body.userId = getUser(req).id;
+	UserController
+	.getBalanceTrend(req.body)
 	.then((result) => res.send(result));
 })
 
