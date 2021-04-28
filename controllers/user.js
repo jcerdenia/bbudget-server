@@ -237,11 +237,24 @@ function getBreakdownByType(type, params) {
 	});
 }
 
-module.exports.getBalanceTrend = (params) => {
+module.exports.getBalanceTrendByRange = (params) => {
 	return User
 	.findById(params.userId)
 	.then((user) => {
-		return user.transactions.map((transaction) => {
+		if (params.fromDate == '') {
+			params.fromDate = user.transactions[0].dateAdded;
+		}
+
+		if (params.toDate == '') {
+			params.toDate = user.transactions[user.transactions.length - 1].dateAdded;
+		}
+		
+		return user.transactions.filter((transaction) => {
+			const isSameOrAfter = moment(transaction.dateAdded).isSameOrAfter(params.fromDate, 'day');
+			const isSameOrBefore = moment(transaction.dateAdded).isSameOrBefore(params.toDate, 'day');
+			return isSameOrAfter && isSameOrBefore;
+		})
+		.map((transaction) => {
 			return {
 				balance: transaction.balanceAfterTransaction,
 				date: moment(transaction.dateAdded).format('l')

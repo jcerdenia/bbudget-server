@@ -99,10 +99,10 @@ router.get('/get-expenses-by-month', auth.verify, (req, res) => {
 	.then((result) => res.send(result));
 })
 
-router.get('/get-balance-trend', auth.verify, (req, res) => {
+router.post('/get-balance-trend-by-range', auth.verify, (req, res) => {
 	req.body.userId = getUser(req).id;
 	UserController
-	.getBalanceTrend(req.body)
+	.getBalanceTrendByRange(req.body)
 	.then((result) => res.send(result));
 })
 
