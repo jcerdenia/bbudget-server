@@ -12,20 +12,20 @@ app.use(cors());
 app.use('/api/users', userRoutes);
 
 app.get('/', (req, res) => {
-	const message = "Successfully hosted.";
-	console.log(message);
-	res.send(message);
+  const message = "Successfully hosted.";
+  console.log(message);
+  res.send(message);
 });
 
 app.listen(process.env.PORT, () => {
-	console.log('API is up and running.')
+  console.log('API is up and running.')
 });
 
 mongoose.connection.once('open', () => {
-	console.log('Connected to MongoDB Atlas.')
+  console.log('Connected to MongoDB Atlas.')
 });
 
 mongoose.connect(process.env.DB_CONNECTION_STRING, { 
-	useNewUrlParser: true, 
-	useUnifiedTopology: true 
+  useNewUrlParser: true, 
+  useUnifiedTopology: true 
 });
